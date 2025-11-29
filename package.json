@@ -1,0 +1,105 @@
+{
+    "name": "sveltty",
+    "description": "Svelte 5 in the terminal",
+    "version": "0.0.1",
+    "keywords": [
+        "svelte",
+        "cli",
+        "terminal",
+        "tui",
+        "tty",
+        "console",
+        "ansi"
+    ],
+    "author": "miunau <miunau+npm@miunau.com> (https://miunau.com)",
+    "engines": {
+        "node": ">=22.0.0"
+    },
+    "os": [
+        "!win32"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/miunau/sveltty"
+    },
+    "license": "MIT",
+    "type": "module",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "scripts": {
+        "dev": "tsc -w",
+        "dev:clean": "rm -rf dist && clear && tsc -w",
+        "build": "tsc",
+        "build:clean": "rm -rf dist && tsc",
+        "test": "vitest run",
+        "test:watch": "vitest",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui",
+        "prepublishOnly": "npm run build"
+    },
+    "files": [
+        "dist",
+        "tools",
+        "README.md"
+    ],
+    "dependencies": {
+        "css-tree": "^3.1.0",
+        "happy-dom": "^20.0.10",
+        "sharp": "^0.34.5",
+        "string-width": "^8.1.0",
+        "yoga-layout": "^3.2.1"
+    },
+    "devDependencies": {
+        "@sveltejs/vite-plugin-svelte": "^6.2.1",
+        "@types/css-tree": "^2.3.11",
+        "@types/node": "^24.10.1",
+        "@vitest/coverage-v8": "^4.0.14",
+        "@vitest/ui": "^4.0.14",
+        "svelte": "^5.44.0",
+        "typescript": "^5.9.3",
+        "vite": "^7.2.4",
+        "vitest": "^4.0.14"
+    },
+    "peerDependencies": {
+        "svelte": "^5.0.0"
+    },
+    "peerDependenciesMeta": {
+        "svelte": {
+            "optional": false
+        }
+    },
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        },
+        "./runner": {
+            "types": "./dist/runner.d.ts",
+            "import": "./dist/runner.js"
+        },
+        "./runtime/adapter": {
+            "types": "./dist/runtime/adapter.d.ts",
+            "import": "./dist/runtime/adapter.js"
+        },
+        "./runtime/client": {
+            "types": "./dist/runtime/client/index.d.ts",
+            "import": "./dist/runtime/client/index.js"
+        },
+        "./runtime/client/disclose-version": {
+            "types": "./dist/runtime/client/disclose-version.d.ts",
+            "import": "./dist/runtime/client/disclose-version.js"
+        },
+        "./runtime/operations": {
+            "types": "./dist/runtime/operations.d.ts",
+            "import": "./dist/runtime/operations.js"
+        },
+        "./runtime/actions/bindings": {
+            "types": "./dist/runtime/actions/bindings.d.ts",
+            "import": "./dist/runtime/actions/bindings.js"
+        },
+        "./tools/vite-plugin-sveltty": {
+            "types": "./dist/tools/vite-plugin-sveltty.d.ts",
+            "import": "./dist/tools/vite-plugin-sveltty.js"
+        }
+    }
+}
