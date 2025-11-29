@@ -8,7 +8,7 @@ ensureDomGlobals();
 void ensureRuntimeReady();
 
 export { mount } from './runtime/mount.js';
-export { runComponent } from './runner.js';
+export { runComponent, runSvelteFile, loadSvelteFile, compileSvelte, clearModuleCache, invalidateModule } from './runner.js';
 
 // Export types
 export type {
