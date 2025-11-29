@@ -4,15 +4,30 @@ import {
     getScrollMethodDescriptors,
 } from '../scroll.js';
 
-async function loadOperations() {
-    try {
-        // Prefer aliased path (handled by bundler/plugin)
-        // @ts-ignore
-        return await import('svelte/internal/client/dom/operations.js');
-    } catch (err) {
-        const fallback = new URL('../../../node_modules/svelte/src/internal/client/dom/operations.js', import.meta.url).href;
-        // @ts-ignore
-        return await import(fallback);
+/**
+ * Initialize Svelte's internal DOM state.
+ * This mirrors what svelte/internal/client/dom/operations.js does in init_operations().
+ * We implement it ourselves to avoid path resolution issues when sveltty is installed
+ * as a package in different environments (npm, pnpm, yarn, etc.).
+ */
+function initSvelteOperations(): void {
+    const elementPrototype = window.Element?.prototype;
+    const textPrototype = window.Text?.prototype;
+    
+    if (elementPrototype) {
+        // Performance optimizations that Svelte adds to Element prototype
+        // These properties are used by Svelte's compiled output
+        const ext = elementPrototype as unknown as Record<string, unknown>;
+        if (ext.__click === undefined) ext.__click = undefined;
+        if (ext.__className === undefined) ext.__className = undefined;
+        if (ext.__attributes === undefined) ext.__attributes = null;
+        if (ext.__style === undefined) ext.__style = undefined;
+        if (ext.__e === undefined) ext.__e = undefined;
+    }
+    
+    if (textPrototype) {
+        const ext = textPrototype as unknown as Record<string, unknown>;
+        if (ext.__t === undefined) ext.__t = undefined;
     }
 }
 
@@ -124,11 +139,9 @@ function installDomBindings(): void {
 export function ensureRuntimeReady(): Promise<void> {
     if (runtimeReady) return runtimeReady;
     ensureDomGlobals();
-    runtimeReady = loadOperations().then(operations => {
-        if (typeof operations.init_operations === 'function') {
-            operations.init_operations();
-        }
-    });
+    // Initialize Svelte's DOM state synchronously
+    initSvelteOperations();
+    runtimeReady = Promise.resolve();
     return runtimeReady;
 }
 
