@@ -20,6 +20,7 @@ import { registerRenderer } from './registry.js';
 import { setCell } from './utils.js';
 import { getNodeTag } from '../utils/node.js';
 import { computePseudoElementStyle } from '../style/stylesheet.js';
+import { getStringWidth } from './string-width.js';
 
 /** Default markers for open/closed state */
 export const DETAILS_MARKERS = {
@@ -101,6 +102,12 @@ export function renderDetailsMarker(
 
     const marker = getDetailsMarker(isOpen);
     setCell(grid, y, x, marker, style);
+    
+    // Handle double-width marker characters
+    const markerWidth = getStringWidth(marker);
+    if (markerWidth === 2 && x + 1 < clip.x2 && y < grid.length && x + 1 < grid[y].length) {
+        setCell(grid, y, x + 1, '', style);
+    }
 }
 
 /**
@@ -182,6 +189,13 @@ export const summaryRenderer: ElementRenderer = {
         const markerY = Math.floor(bounds.absY);
         if (markerX >= 0 && markerY >= 0 && markerY < ctx.grid.length && markerX < ctx.grid[markerY].length) {
             setCell(ctx.grid, markerY, markerX, marker, markerStyle);
+            
+            // Handle double-width marker characters (e.g., ▶ ▼ in some terminals)
+            // Fill continuation cell to prevent border corruption
+            const markerWidth = getStringWidth(marker);
+            if (markerWidth === 2 && markerX + 1 < ctx.grid[markerY].length) {
+                setCell(ctx.grid, markerY, markerX + 1, '', markerStyle);
+            }
         }
     },
 };

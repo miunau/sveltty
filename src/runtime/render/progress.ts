@@ -22,6 +22,7 @@ import type { ElementRenderer } from './registry.js';
 import { registerRenderer } from './registry.js';
 import { setCell } from './utils.js';
 import { parseNumericAttribute, parseNumericAttributeOrUndefined } from '../utils/attributes.js';
+import { getStringWidth } from './string-width.js';
 
 /**
  * Get the value of a progress element.
@@ -86,26 +87,46 @@ export function renderProgress(
     const barWidth = Math.floor(width);
     const startX = Math.floor(x);
 
+    // Get character widths for proper rendering
+    const filledCharWidth = getStringWidth(filledChar);
+    const emptyCharWidth = getStringWidth(emptyChar);
+
     if (position < 0) {
         // Indeterminate: show a pulsing/animated pattern
-        for (let i = 0; i < barWidth; i++) {
+        let i = 0;
+        while (i < barWidth) {
             const col = startX + i;
-            if (col < clip.x1 || col >= clip.x2) continue;
-            const char = i % 2 === 0 ? '▓' : '░';
-            setCell(grid, barY, col, char, barStyle);
+            if (col >= clip.x1 && col < clip.x2) {
+                const char = (i % 2 === 0) ? '▓' : '░';
+                setCell(grid, barY, col, char, barStyle);
+            }
+            i++;
         }
     } else {
         // Determinate: show filled portion
         const filledWidth = Math.round(position * barWidth);
         
-        for (let i = 0; i < barWidth; i++) {
+        let i = 0;
+        while (i < barWidth) {
             const col = startX + i;
-            if (col < clip.x1 || col >= clip.x2) continue;
-            if (i < filledWidth) {
-                setCell(grid, barY, col, filledChar, barStyle);
-            } else {
-                setCell(grid, barY, col, emptyChar, trackStyle);
+            if (col >= clip.x1 && col < clip.x2) {
+                if (i < filledWidth) {
+                    setCell(grid, barY, col, filledChar, barStyle);
+                    // Handle double-width characters
+                    if (filledCharWidth === 2 && col + 1 < clip.x2) {
+                        setCell(grid, barY, col + 1, '', barStyle);
+                        i++;
+                    }
+                } else {
+                    setCell(grid, barY, col, emptyChar, trackStyle);
+                    // Handle double-width characters
+                    if (emptyCharWidth === 2 && col + 1 < clip.x2) {
+                        setCell(grid, barY, col + 1, '', trackStyle);
+                        i++;
+                    }
+                }
             }
+            i++;
         }
     }
 }

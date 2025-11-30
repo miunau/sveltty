@@ -31,6 +31,7 @@ import type { TextStyle, CliNode } from '../types.js';
 import type { ElementRenderer } from './registry.js';
 import { registerRenderer } from './registry.js';
 import { setCell } from './utils.js';
+import { getStringWidth } from './string-width.js';
 
 /**
  * Get a numeric attribute value with a default.
@@ -206,14 +207,31 @@ export function renderMeter(
     const position = range > 0 ? (Math.max(min, Math.min(value, max)) - min) / range : 0;
     const filledWidth = Math.round(position * barWidth);
 
-    for (let i = 0; i < barWidth; i++) {
+    // Get character widths for proper rendering
+    const filledCharWidth = getStringWidth(filledChar);
+    const emptyCharWidth = getStringWidth(emptyChar);
+
+    let i = 0;
+    while (i < barWidth) {
         const col = startX + i;
-        if (col < clip.x1 || col >= clip.x2) continue;
-        if (i < filledWidth) {
-            setCell(grid, barY, col, filledChar, barStyle);
-        } else {
-            setCell(grid, barY, col, emptyChar, trackStyle);
+        if (col >= clip.x1 && col < clip.x2) {
+            if (i < filledWidth) {
+                setCell(grid, barY, col, filledChar, barStyle);
+                // Handle double-width characters
+                if (filledCharWidth === 2 && col + 1 < clip.x2) {
+                    setCell(grid, barY, col + 1, '', barStyle);
+                    i++;
+                }
+            } else {
+                setCell(grid, barY, col, emptyChar, trackStyle);
+                // Handle double-width characters
+                if (emptyCharWidth === 2 && col + 1 < clip.x2) {
+                    setCell(grid, barY, col + 1, '', trackStyle);
+                    i++;
+                }
+            }
         }
+        i++;
     }
 }
 
