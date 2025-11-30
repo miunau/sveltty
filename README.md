@@ -51,6 +51,7 @@ See the [example](./example) for a complete example.
 - The base CSS styling for all elements is overrideable. SvelTTY provides a [default "user agent stylesheet"](./src/runtime/style/defaults.ts) that defines the base appearance for all elements in the terminal environment, however, everything is customizable.
 - I use `ch` as the CSS sizing unit, but any non-percentage unit is treated the same, so feel free to use `px` etc.
 - You can use `<img>` elements to render images in supported terminals. Be sure to set a width and height.
+- No CSS animation support- for ease of rendering + performance, the screen drawing is synchronous and not a frame-based renderer. If necessary you can do JS based animations eg. with setTimeout().
 
 ## License
 
