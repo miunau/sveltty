@@ -2,6 +2,8 @@
 
 SvelTTY provides a runtime that allows you to render and interact with Svelte apps in the terminal.
 
+<img width="1752" height="1381" alt="Screenshot 2025-11-30 at 10 08 00" src="https://github.com/user-attachments/assets/12aaa83e-5d83-4ef0-a6b4-14485efe5446" />
+
 Pains are taken to make it easy to use and translate mindset-wise from the web to a TUI. There are no special `<Box>` or `<Text>` components; just use regular HTML, CSS and JavaScript, including Svelte runes.
 
 - Supports most common HTML elements and attributes (typography, forms, lists, tables, details, progress, etc.) and their CSS properties.
