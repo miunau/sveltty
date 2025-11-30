@@ -21,7 +21,7 @@ let tempDir: string | null = null;
 
 /** Map of source paths to their compiled temp file paths */
 const compiledPaths = new Map<string, string>();
-
+ 
 /** Resolved absolute file:// URLs for sveltty imports */
 let resolvedUrls: Record<string, string> | null = null;
 
@@ -225,11 +225,22 @@ function rewriteSvelteImports(code: string, sourceDir: string): string {
     });
 }
 
+export interface LoadSvelteOptions {
+    /** Cache compiled modules (default: true) */
+    cache?: boolean;
+    /** 
+     * Base directory for resolving relative paths.
+     * Defaults to process.cwd().
+     * Use import.meta.dirname or fileURLToPath(import.meta.url) for script-relative paths.
+     */
+    baseDir?: string;
+}
+
 /**
  * Load a Svelte component from a file path.
  * Recursively compiles all imported .svelte files.
  * 
- * @param filePath - Path to the .svelte file (absolute or relative to cwd)
+ * @param filePath - Path to the .svelte file (absolute or relative to baseDir/cwd)
  * @param options - Load options
  * @returns The compiled Svelte component constructor
  * 
@@ -237,18 +248,25 @@ function rewriteSvelteImports(code: string, sourceDir: string): string {
  * ```typescript
  * import { loadSvelteFile, runComponent } from 'sveltty';
  * 
+ * // Relative to current working directory
  * const App = await loadSvelteFile('./App.svelte');
+ * 
+ * // Relative to script location (recommended)
+ * const App = await loadSvelteFile('./App.svelte', { 
+ *     baseDir: import.meta.dirname 
+ * });
+ * 
  * runComponent(App, { props: { name: 'World' } });
  * ```
  */
 export async function loadSvelteFile(
     filePath: string,
-    options: { cache?: boolean } = {}
+    options: LoadSvelteOptions = {}
 ): Promise<unknown> {
-    const { cache = true } = options;
+    const { cache = true, baseDir = process.cwd() } = options;
     
-    // Resolve to absolute path
-    const absolutePath = resolve(process.cwd(), filePath);
+    // Resolve to absolute path relative to baseDir
+    const absolutePath = resolve(baseDir, filePath);
     
     // Check cache
     if (cache && moduleCache.has(absolutePath)) {
