@@ -21,13 +21,27 @@ Svelte is a peer dependency, so you need to install it as well.
 ## Quick Start
 
 ```ts
-import { sveltty } from 'sveltty';
-import App from './App.svelte';
+import { runFile } from 'sveltty';
 
-sveltty(App, {
-    clearOnExit: true,
+await runFile('./App.svelte', {
+    baseDir: import.meta.dirname,
 });
 ```
+
+or with runner:
+
+```bash
+node --import sveltty/register app.js
+```
+
+```ts
+import App from './App.svelte';
+import { runComponent } from 'sveltty';
+
+runComponent(App);
+```
+
+See the [example](./example) for a complete example.
 
 ### First things to know
 
