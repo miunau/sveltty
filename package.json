@@ -1,7 +1,7 @@
 {
     "name": "sveltty",
     "description": "Svelte 5 in the terminal",
-    "version": "0.0.3",
+    "version": "0.0.4",
     "keywords": [
         "svelte",
         "cli",
