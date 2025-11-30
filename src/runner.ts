@@ -1,7 +1,7 @@
 import { mount } from './runtime/mount.js';
 import type { MountOptions } from './runtime/types.js';
 import { setLogFile, enableLogging, log } from './runtime/logger.js';
-import { loadSvelteFile, compileSvelte, clearModuleCache, invalidateModule, type LoadSvelteOptions } from './loader.js';
+import { loadFile } from './loader.js';
 
 export interface RunOptions extends Omit<MountOptions, 'exitOnCtrlC'> {
     /** Auto-unmount after this many milliseconds (0 = keep running) */
@@ -21,7 +21,7 @@ export interface RunOptions extends Omit<MountOptions, 'exitOnCtrlC'> {
 export { log, setLogFile, enableLogging } from './runtime/logger.js';
 
 // Re-export loader utilities
-export { loadSvelteFile, compileSvelte, clearModuleCache, invalidateModule, type LoadSvelteOptions } from './loader.js';
+export { loadFile, compileSvelte, clearModuleCache, invalidateModule, type LoadSvelteOptions } from './loader.js';
 
 export function runComponent(Component: any, opts: RunOptions = {}) {
     const {
@@ -60,7 +60,7 @@ export function runComponent(Component: any, opts: RunOptions = {}) {
 
 /**
  * Load and run a Svelte component from a file path.
- * Combines loadSvelteFile and runComponent for convenience.
+ * Combines loadFile and runComponent for convenience.
  * 
  * Relative paths are resolved from the calling file's directory by default.
  * 
@@ -70,19 +70,19 @@ export function runComponent(Component: any, opts: RunOptions = {}) {
  * 
  * @example
  * ```typescript
- * import { runSvelteFile } from 'sveltty/runner';
+ * import { runFile } from 'sveltty/runner';
  * 
  * // Just works - relative to your script
- * await runSvelteFile('./App.svelte');
+ * await runFile('./App.svelte');
  * 
  * // With props
- * await runSvelteFile('./App.svelte', {
+ * await runFile('./App.svelte', {
  *     props: { name: 'World' },
  * });
  * ```
  */
-export async function runSvelteFile(filePath: string, opts: RunOptions = {}) {
+export async function runFile(filePath: string, opts: RunOptions = {}) {
     const { baseDir, ...runOpts } = opts;
-    const Component = await loadSvelteFile(filePath, { baseDir });
+    const Component = await loadFile(filePath, { baseDir });
     return runComponent(Component, runOpts);
 }

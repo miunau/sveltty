@@ -278,15 +278,15 @@ export interface LoadSvelteOptions {
  * 
  * @example
  * ```typescript
- * import { loadSvelteFile, runComponent } from 'sveltty';
+ * import { loadFile, runComponent } from 'sveltty';
  * 
  * // Relative to calling script (automatic)
- * const App = await loadSvelteFile('./App.svelte');
+ * const App = await loadFile('./App.svelte');
  * 
  * runComponent(App, { props: { name: 'World' } });
  * ```
  */
-export async function loadSvelteFile(
+export async function loadFile(
     filePath: string,
     options: LoadSvelteOptions = {}
 ): Promise<unknown> {
