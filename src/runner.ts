@@ -12,8 +12,7 @@ export interface RunOptions extends Omit<MountOptions, 'exitOnCtrlC'> {
     debugLog?: string;
     /** 
      * Base directory for resolving relative .svelte paths.
-     * Defaults to process.cwd().
-     * Use import.meta.dirname for script-relative paths.
+     * Defaults to the calling file's directory (detected automatically).
      */
     baseDir?: string;
 }
@@ -63,7 +62,9 @@ export function runComponent(Component: any, opts: RunOptions = {}) {
  * Load and run a Svelte component from a file path.
  * Combines loadSvelteFile and runComponent for convenience.
  * 
- * @param filePath - Path to the .svelte file (absolute or relative to baseDir/cwd)
+ * Relative paths are resolved from the calling file's directory by default.
+ * 
+ * @param filePath - Path to the .svelte file (absolute or relative)
  * @param opts - Run options (same as runComponent, plus baseDir for path resolution)
  * @returns The mounted application instance
  * 
@@ -71,12 +72,11 @@ export function runComponent(Component: any, opts: RunOptions = {}) {
  * ```typescript
  * import { runSvelteFile } from 'sveltty/runner';
  * 
- * // Relative to current working directory
+ * // Just works - relative to your script
  * await runSvelteFile('./App.svelte');
  * 
- * // Relative to script location (recommended)
+ * // With props
  * await runSvelteFile('./App.svelte', {
- *     baseDir: import.meta.dirname,
  *     props: { name: 'World' },
  * });
  * ```

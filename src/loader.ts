@@ -7,11 +7,41 @@
  */
 
 import { readFile, writeFile, mkdir, unlink, rm } from 'fs/promises';
-import { resolve, basename, dirname, relative } from 'path';
-import { pathToFileURL } from 'url';
+import { resolve, basename, dirname, isAbsolute } from 'path';
+import { pathToFileURL, fileURLToPath } from 'url';
 import { tmpdir } from 'os';
 import { randomBytes } from 'crypto';
 import { compile } from 'svelte/compiler';
+
+/**
+ * Get the directory of the calling file by parsing the error stack.
+ * This allows us to resolve relative paths from the caller's location.
+ */
+function getCallerDir(): string | null {
+    const originalPrepare = Error.prepareStackTrace;
+    Error.prepareStackTrace = (_, stack) => stack;
+    const err = new Error();
+    const stack = err.stack as unknown as NodeJS.CallSite[];
+    Error.prepareStackTrace = originalPrepare;
+    
+    // Find the first call site outside of this file and sveltty internals
+    for (const site of stack) {
+        const filename = site.getFileName();
+        if (!filename) continue;
+        
+        // Skip internal sveltty files
+        if (filename.includes('/sveltty/') || filename.includes('\\sveltty\\')) continue;
+        if (filename.includes('/loader.') || filename.includes('/runner.')) continue;
+        
+        // Found the caller
+        if (filename.startsWith('file://')) {
+            return dirname(fileURLToPath(filename));
+        }
+        return dirname(filename);
+    }
+    
+    return null;
+}
 
 /** Cache of compiled modules to avoid recompilation */
 const moduleCache = new Map<string, unknown>();
@@ -230,8 +260,8 @@ export interface LoadSvelteOptions {
     cache?: boolean;
     /** 
      * Base directory for resolving relative paths.
-     * Defaults to process.cwd().
-     * Use import.meta.dirname or fileURLToPath(import.meta.url) for script-relative paths.
+     * Defaults to the calling file's directory (detected via call stack).
+     * Falls back to process.cwd() if detection fails.
      */
     baseDir?: string;
 }
@@ -240,7 +270,9 @@ export interface LoadSvelteOptions {
  * Load a Svelte component from a file path.
  * Recursively compiles all imported .svelte files.
  * 
- * @param filePath - Path to the .svelte file (absolute or relative to baseDir/cwd)
+ * Relative paths are resolved from the calling file's directory by default.
+ * 
+ * @param filePath - Path to the .svelte file (absolute or relative)
  * @param options - Load options
  * @returns The compiled Svelte component constructor
  * 
@@ -248,13 +280,8 @@ export interface LoadSvelteOptions {
  * ```typescript
  * import { loadSvelteFile, runComponent } from 'sveltty';
  * 
- * // Relative to current working directory
+ * // Relative to calling script (automatic)
  * const App = await loadSvelteFile('./App.svelte');
- * 
- * // Relative to script location (recommended)
- * const App = await loadSvelteFile('./App.svelte', { 
- *     baseDir: import.meta.dirname 
- * });
  * 
  * runComponent(App, { props: { name: 'World' } });
  * ```
@@ -263,10 +290,17 @@ export async function loadSvelteFile(
     filePath: string,
     options: LoadSvelteOptions = {}
 ): Promise<unknown> {
-    const { cache = true, baseDir = process.cwd() } = options;
+    const { cache = true } = options;
     
-    // Resolve to absolute path relative to baseDir
-    const absolutePath = resolve(baseDir, filePath);
+    // Resolve to absolute path
+    let absolutePath: string;
+    if (isAbsolute(filePath)) {
+        absolutePath = filePath;
+    } else {
+        // Use provided baseDir, or detect caller's directory, or fall back to cwd
+        const baseDir = options.baseDir ?? getCallerDir() ?? process.cwd();
+        absolutePath = resolve(baseDir, filePath);
+    }
     
     // Check cache
     if (cache && moduleCache.has(absolutePath)) {
